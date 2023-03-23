@@ -56,7 +56,8 @@ def command_line_build(args):
             input_filenames.append(f"local/{local_policy}.json")
 
         policies = policies_from_filenames(input_filenames)
-        output_filenames = write_policy_set(args.path, policy_set_name, combine(policies))
+        combined_policies = combine(policies, max_policy_quota=args.max_policy_quota)
+        output_filenames = write_policy_set(args.path, policy_set_name, combined_policies)
 
         print()
         print(f"Created the following files for policy set {policy_set_name}:")
@@ -126,7 +127,13 @@ def handle_command_line():
         "--policy-set",
         "-p",
         action="append",
-        help=("Name a configured policy set to build. May be given multiple times."),
+        help="Name of a configured policy set to build. May be given multiple times.",
+    )
+    group.add_argument(
+        "--max-policy-quota",
+        type=int,
+        default=10,
+        help="Maximum number of policies to allow in a set. Default quota: %(default)s",
     )
     group.add_argument("--all", action="store_true", help="Build all configured policy sets.")
     builder.add_argument("--profile", help="Optional IAM profile to authenticate with")

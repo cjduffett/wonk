@@ -87,8 +87,12 @@ def grouped_resources(statements: List[Statement]) -> Tuple[bool, List[Statement
     return changed, list(statement_sets.values())
 
 
-def combine(policies: List[Policy]) -> List[Policy]:
-    """Combine policy files into the smallest possible set of outputs."""
+def combine(policies: List[Policy], max_policy_quota: int = 10) -> List[Policy]:
+    """Combine policy files into the smallest possible set of outputs.
+    
+    10 policies is the default quota allowed by AWS, but a maximum of 20 is possible
+    if you request a quota increase.
+    """
 
     new_policy = Policy(statements=minify(policies))
 
@@ -125,7 +129,7 @@ def combine(policies: List[Policy]) -> List[Policy]:
         for statement_dict in statement.split(max_statement_size):
             packed_list.append(smallest_json(statement_dict))
 
-    statement_sets = optimizer.pack_statements(packed_list, max_statement_size, 10)
+    statement_sets = optimizer.pack_statements(packed_list, max_statement_size, max_policy_quota)
 
     policies = []
     for statement_set in statement_sets:
